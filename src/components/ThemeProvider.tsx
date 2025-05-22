@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "dark" | "light" | "system";
@@ -33,19 +32,23 @@ export function ThemeProvider({
 
   useEffect(() => {
     const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
-      root.classList.add(systemTheme);
-      return;
+    function applyTheme() {
+      const systemTheme = mediaQuery.matches ? "dark" : "light";
+      const currentTheme = theme === "system" ? systemTheme : theme;
+      
+      root.classList.remove("light", "dark");
+      root.classList.add(currentTheme);
     }
 
-    root.classList.add(theme);
+    applyTheme();
+
+    // Listen for system theme changes
+    mediaQuery.addEventListener("change", applyTheme);
+
+    return () => mediaQuery.removeEventListener("change", applyTheme);
   }, [theme]);
 
   const value = {
